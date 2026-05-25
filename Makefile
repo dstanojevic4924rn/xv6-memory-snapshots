@@ -33,6 +33,12 @@ OBJS = \
 	$K/vectors.o\
 	$K/vm.o\
 	$K/printf.o\
+	$K/snap_diff.o\
+	$K/snap_empty.o\
+	$K/snap_release.o\
+	$K/snap_restore.o\
+	$K/snap_stat.o\
+	$K/snap_take.o\
 
 # Cross-compiling (e.g., on Mac OS X)
 # TOOLPREFIX = i386-jos-elf
@@ -197,6 +203,7 @@ UPROGS=\
 	$U/_usertests\
 	$U/_wc\
 	$U/_zombie\
+	$U/_snaptest\
 
 fs.img: $T/mkfs README $(UPROGS)
 	$T/mkfs fs.img README $(UPROGS)

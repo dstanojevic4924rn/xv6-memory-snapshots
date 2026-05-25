@@ -23,5 +23,11 @@
 #define SYS_link   19
 #define SYS_mkdir  20
 #define SYS_close  21
+#define SYS_snap_take     22
+#define SYS_snap_restore  23
+#define SYS_snap_diff     24
+#define SYS_snap_release  25
+#define SYS_snap_status   26
+#define SYS_snap_empty    27
 
 #endif // KERNEL_SYSCALL_H

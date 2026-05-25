@@ -100,6 +100,12 @@ extern int sys_unlink(void);
 extern int sys_wait(void);
 extern int sys_write(void);
 extern int sys_uptime(void);
+extern int sys_snap_take(void);
+extern int sys_snap_restore(void);
+extern int sys_snap_diff(void);
+extern int sys_snap_release(void);
+extern int sys_snap_status(void);
+extern int sys_snap_empty(void);
 
 static int (*syscalls[])(void) = {
 [SYS_fork]    sys_fork,
@@ -123,6 +129,12 @@ static int (*syscalls[])(void) = {
 [SYS_link]    sys_link,
 [SYS_mkdir]   sys_mkdir,
 [SYS_close]   sys_close,
+[SYS_snap_take]    sys_snap_take,
+[SYS_snap_restore] sys_snap_restore,
+[SYS_snap_diff]    sys_snap_diff,
+[SYS_snap_release] sys_snap_release,
+[SYS_snap_status]  sys_snap_status,
+[SYS_snap_empty]   sys_snap_empty,
 };
 
 void

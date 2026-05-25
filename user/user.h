@@ -5,6 +5,7 @@
 
 struct stat;
 struct rtcdate;
+struct snap_info;
 
 // system calls
 int fork(void);
@@ -28,6 +29,12 @@ int getpid(void);
 char* sbrk(int);
 int sleep(int);
 int uptime(void);
+int snap_take(int slot);
+int snap_restore(int slot);
+int snap_diff(int slot1, int slot2);
+int snap_release(int slot);
+int snap_status(int slot, struct snap_info *si);
+int snap_empty(void);
 
 // ulib.c
 int stat(const char*, struct stat*);

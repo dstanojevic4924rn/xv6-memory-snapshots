@@ -383,3 +383,95 @@ copyout(pde_t *pgdir, uint va, void *p, uint len)
 	}
 	return 0;
 }
+
+
+pde_t*
+snapshot_copyuvm(pde_t *pgdir, uint sz, int *num_pages_out)
+{
+	pde_t *d;
+	pte_t *pte;
+	uint pa, i, flags;
+	char *mem;
+	int num_pages = 0;
+
+	if((d = setupkvm()) == 0){
+		*num_pages_out = 0;
+		return 0;
+	}
+	for(i = 0; i < sz; i+= PGSIZE){
+		if((pte = walkpgdir(pgdir, (void *) i, 0)) == 0)
+			continue;
+		if((*pte & PTE_P) == 0)
+			continue;
+		// if((*pte & PTE_U) == 0)
+		// 	continue;
+
+		pa = PTE_ADDR(*pte);
+		flags = PTE_FLAGS(*pte);
+
+		if((mem = kalloc()) == 0)
+			goto bad;
+		memmove(mem, (char*)P2V(pa), PGSIZE);
+
+		if(mappages(d, (void*)i, PGSIZE, V2P(mem), flags) < 0){
+			kfree(mem);
+			goto bad;
+		}
+		num_pages++;
+	}
+
+	*num_pages_out = num_pages;
+	return d;
+
+	bad:
+		freevm(d);
+		*num_pages_out = 0;
+		return 0;
+}
+
+int
+snapshot_diff(pde_t *pgdir1, uint sz1, pde_t *pgdir2, uint sz2)
+{
+	uint i;
+	pte_t *pte1, *pte2;
+	int diff_count = 0;
+	uint maxsz = sz1 > sz2 ? sz1 : sz2;
+
+	for(i = 0; i < maxsz; i += PGSIZE){
+		int present1 = 0, present2 = 0;
+		uint pa1 = 0, pa2 = 0;
+
+		if((pte1 = walkpgdir(pgdir1, (void*)i, 0)) != 0)
+			if((*pte1 & PTE_P)){ //&& (*pte1 & PTE_U)
+				present1 =1;
+				pa1 = PTE_ADDR(*pte1);
+			}
+
+		if((pte2 = walkpgdir(pgdir2, (void*)i, 0)) != 0)
+			if((*pte2 & PTE_P)){ //&& (*pte2 & PTE_U)
+				present2 = 1;
+				pa2 = PTE_ADDR(*pte2);
+			}
+
+		if(present1 != present2){
+			diff_count++;
+			continue;
+		}
+
+		if(!present1)
+			continue;
+
+		char *a = (char*)P2V(pa1);
+		char *b = (char*)P2V(pa2);
+		int same = 1;
+		for(int j = 0; j < PGSIZE; j++){
+			if(a[j] != b[j]){
+				same = 0;
+				break;
+			}
+		}
+		if(!same)
+			diff_count++;
+	}
+	return diff_count;
+}

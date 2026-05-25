@@ -5,6 +5,7 @@
 #include "mmu.h"
 #include "param.h"
 
+
 // Per-CPU state
 struct cpu {
 	uchar apicid;                // Local APIC ID
@@ -40,6 +41,16 @@ struct context {
 
 enum procstate { UNUSED, EMBRYO, SLEEPING, RUNNABLE, RUNNING, ZOMBIE };
 
+#define MAX_SNAPS 4
+
+struct snapshot {
+
+	int used;
+	pde_t *pgdir;
+	uint sz;
+	int num_pages; //broj kopiranih stranica
+};
+
 // Per-process state
 struct proc {
 	uint sz;                     // Size of process memory (bytes)
@@ -55,6 +66,7 @@ struct proc {
 	struct file *ofile[NOFILE];  // Open files
 	struct inode *cwd;           // Current directory
 	char name[16];               // Process name (debugging)
+	struct snapshot snaps[MAX_SNAPS]; //4 snapa po procesu
 };
 
 // Process memory is laid out contiguously, low addresses first:

@@ -112,6 +112,13 @@ found:
 	memset(p->context, 0, sizeof *p->context);
 	p->context->eip = (uint)forkret;
 
+	for(int i = 0; i < MAX_SNAPS; i++){
+		p->snaps[i].used = 0;
+		p->snaps[i].pgdir = 0;
+		p->snaps[i].sz = 0;
+		p->snaps[i].num_pages = 0;
+	}
+
 	return p;
 }
 
@@ -179,7 +186,7 @@ growproc(int n)
 int
 fork(void)
 {
-	int i, pid;
+	int i, pid, j;
 	struct proc *np;
 	struct proc *curproc = myproc();
 
@@ -211,6 +218,32 @@ fork(void)
 
 	pid = np->pid;
 
+	for(i = 0; i < MAX_SNAPS; i++){
+		if(curproc->snaps[i].used){
+			np->snaps[i].pgdir = snapshot_copyuvm(curproc->snaps[i].pgdir, curproc->snaps[i].sz,&np->snaps[i].num_pages);
+			if(np->snaps[i].pgdir == 0){
+				for(j = 0; j < i; j++){
+					if(np->snaps[j].used){
+						freevm(np->snaps[j].pgdir);
+						np->snaps[j].used = 0;
+					}
+				}
+				freevm(np->pgdir);
+				kfree(np->kstack);
+				np->kstack = 0;
+				np->state = UNUSED;
+				return -1;
+			}
+			np->snaps[i].sz = curproc->snaps[i].sz;
+			np->snaps[i].used = 1;
+		} else {
+			np->snaps[i].used = 0;
+			np->snaps[i].pgdir = 0;
+			np->snaps[i].sz = 0;
+			np->snaps[i].num_pages = 0;
+		}
+	}
+
 	acquire(&ptable.lock);
 
 	np->state = RUNNABLE;
@@ -230,6 +263,8 @@ exit(void)
 	struct proc *p;
 	int fd;
 
+	int i;
+
 	if(curproc == initproc)
 		panic("init exiting");
 
@@ -245,6 +280,18 @@ exit(void)
 	iput(curproc->cwd);
 	end_op();
 	curproc->cwd = 0;
+
+
+	for(i = 0; i < MAX_SNAPS; i++){
+		if(curproc->snaps[i].used){
+			freevm(curproc->snaps[i].pgdir);
+			curproc->snaps[i].used = 0;
+			curproc->snaps[i].pgdir = 0;
+			curproc->snaps[i].sz = 0;
+			curproc->snaps[i].num_pages = 0;
+		}
+
+	}
 
 	acquire(&ptable.lock);
 

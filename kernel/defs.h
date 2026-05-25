@@ -189,6 +189,8 @@ void            switchuvm(struct proc*);
 void            switchkvm(void);
 int             copyout(pde_t*, uint, void*, uint);
 void            clearpteu(pde_t *pgdir, char *uva);
+pde_t* snapshot_copyuvm(pde_t*, uint, int*);
+int snapshot_diff(pde_t*, uint, pde_t*, uint);
 
 // printf.c
 void            e9printf(const char* fmt, ...);

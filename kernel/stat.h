@@ -15,4 +15,9 @@ struct stat {
 	uint size;   // Size of file in bytes
 };
 
+struct snap_info {
+	int size; //velicina snimka u bajtovima
+	int num_pages; //broj alociranih fizickih stranica
+};
+
 #endif // KERNEL_STAT_H
