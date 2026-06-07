@@ -486,7 +486,7 @@ sys_snap_count_readonly(void)
 		for(int j = 0; j < p->sz; j+= PGSIZE){
 			pte_t *pte = walkpgdir(p->snaps[i].pgdir, (void*)j, 0);
 
-			int p_present = (pte && (*pte & PTE_P));
+			int p_present = (pte & (*pte & PTE_P));
 			if(p_present)
 				count++;
 		}
