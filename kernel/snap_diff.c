@@ -24,6 +24,5 @@ sys_snap_diff(void)
 
     // return snapshot_diff(p->snaps[slot1].pgdir, p->snaps[slot2].pgdir);
 
-    return snapshot_diff(p->snaps[slot1].pgdir, p->snaps[slot1].sz,
-                         p->snaps[slot2].pgdir, p->snaps[slot2].sz);
+    return 0; //snapshot_diff(p->snaps[slot1].pgdir, p->snaps[slot1].sz, p->snaps[slot2].pgdir, p->snaps[slot2].sz)
 }

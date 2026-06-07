@@ -29,5 +29,6 @@
 #define SYS_snap_release  25
 #define SYS_snap_status   26
 #define SYS_snap_empty    27
+#define SYS_snap_count_readonly 28
 
 #endif // KERNEL_SYSCALL_H

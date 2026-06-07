@@ -35,6 +35,7 @@ int snap_diff(int slot1, int slot2);
 int snap_release(int slot);
 int snap_status(int slot, struct snap_info *si);
 int snap_empty(void);
+int snap_count_readonly(void);
 
 // ulib.c
 int stat(const char*, struct stat*);

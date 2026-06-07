@@ -429,49 +429,68 @@ snapshot_copyuvm(pde_t *pgdir, uint sz, int *num_pages_out)
 		return 0;
 }
 
+// int
+// snapshot_diff(pde_t *pgdir1, uint sz1, pde_t *pgdir2, uint sz2)
+// {
+// 	uint i;
+// 	pte_t *pte1, *pte2;
+// 	int diff_count = 0;
+// 	uint maxsz = sz1 > sz2 ? sz1 : sz2;
+//
+// 	for(i = 0; i < maxsz; i += PGSIZE){
+// 		int present1 = 0, present2 = 0;
+// 		uint pa1 = 0, pa2 = 0;
+//
+// 		if((pte1 = walkpgdir(pgdir1, (void*)i, 0)) != 0)
+// 			if((*pte1 & PTE_P)){ //&& (*pte1 & PTE_U)
+// 				present1 =1;
+// 				pa1 = PTE_ADDR(*pte1);
+// 			}
+//
+// 		if((pte2 = walkpgdir(pgdir2, (void*)i, 0)) != 0)
+// 			if((*pte2 & PTE_P)){ //&& (*pte2 & PTE_U)
+// 				present2 = 1;
+// 				pa2 = PTE_ADDR(*pte2);
+// 			}
+//
+// 		if(present1 != present2){
+// 			diff_count++;
+// 			continue;
+// 		}
+//
+// 		if(!present1)
+// 			continue;
+//
+// 		char *a = (char*)P2V(pa1);
+// 		char *b = (char*)P2V(pa2);
+// 		int same = 1;
+// 		for(int j = 0; j < PGSIZE; j++){
+// 			if(a[j] != b[j]){
+// 				same = 0;
+// 				break;
+// 			}
+// 		}
+// 		if(!same)
+// 			diff_count++;
+// 	}
+// 	return diff_count;
+// }
+
 int
-snapshot_diff(pde_t *pgdir1, uint sz1, pde_t *pgdir2, uint sz2)
+sys_snap_count_readonly(void)
 {
-	uint i;
-	pte_t *pte1, *pte2;
-	int diff_count = 0;
-	uint maxsz = sz1 > sz2 ? sz1 : sz2;
+	int count = 0;
+	struct proc *p = myproc();
 
-	for(i = 0; i < maxsz; i += PGSIZE){
-		int present1 = 0, present2 = 0;
-		uint pa1 = 0, pa2 = 0;
+	for(int i = 0; i < 4; i++){
+		for(int j = 0; j < p->sz; j+= PGSIZE){
+			pte_t *pte = walkpgdir(p->snaps[i].pgdir, (void*)j, 0);
 
-		if((pte1 = walkpgdir(pgdir1, (void*)i, 0)) != 0)
-			if((*pte1 & PTE_P)){ //&& (*pte1 & PTE_U)
-				present1 =1;
-				pa1 = PTE_ADDR(*pte1);
-			}
-
-		if((pte2 = walkpgdir(pgdir2, (void*)i, 0)) != 0)
-			if((*pte2 & PTE_P)){ //&& (*pte2 & PTE_U)
-				present2 = 1;
-				pa2 = PTE_ADDR(*pte2);
-			}
-
-		if(present1 != present2){
-			diff_count++;
-			continue;
+			int p_present = (pte && (*pte & PTE_P));
+			if(p_present)
+				count++;
 		}
-
-		if(!present1)
-			continue;
-
-		char *a = (char*)P2V(pa1);
-		char *b = (char*)P2V(pa2);
-		int same = 1;
-		for(int j = 0; j < PGSIZE; j++){
-			if(a[j] != b[j]){
-				same = 0;
-				break;
-			}
-		}
-		if(!same)
-			diff_count++;
 	}
-	return diff_count;
+	return count;
 }
+
