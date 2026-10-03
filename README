@@ -1,4 +1,34 @@
-[![Review Assignment Due Date](https://classroom.github.com/assets/deadline-readme-button-22041afd0340ce965d47ae6ef1cefeee28c7c493a6346c4f15d667ab976d596c.svg)](https://classroom.github.com/a/agw6QyaL)
+# xv6 Memory Snapshots Mechanism
+
+This project implements a mechanism for taking and restoring process memory snapshots at the kernel level. It simulates functionalities similar to checkpointing and rollback in advanced operating systems, limited to 4 slots per process.
+
+## Key Implementations
+
+1. Allocating new physical pages and creating independent page tables for each memory snapshot, mapping them to identical virtual addresses.
+2. Restoring memory while preserving the original snapshot, allowing multiple rollbacks to the same state.
+3. Implementing a kernel level rollback mechanism to free partially allocated resources if memory allocation fails during a snapshot creation.
+4. Comparing snapshots at the physical address level byte by byte to find differences, accounting for size mismatches.
+5. Inheriting all memory snapshots during the fork system call so child processes get independent copies.
+6. Automatically freeing all snapshot resources in the exit system call to prevent memory leaks.
+
+## System Calls
+
+1. snap_take: Creates a snapshot of the current user memory in a specified slot.
+2. snap_restore: Reverts the process memory to the state saved in a specific slot.
+3. snap_diff: Compares two snapshots and returns the number of differing pages.
+4. snap_release: Frees the physical pages and page table of a snapshot.
+5. snap_status: Returns the size and page count of a snapshot.
+6. snap_empty: Finds the first available empty slot.
+
+## Technologies
+
+1. C programming language
+2. xv6 memory management
+3. Page table manipulation
+4. Physical page allocation and deallocation
+
+---
+
 xv6 is a re-implementation of Dennis Ritchie's and Ken Thompson's Unix
 Version 6 (v6).  xv6 loosely follows the structure and style of v6,
 but is implemented for a modern x86-based multiprocessor using ANSI C.
